@@ -19,4 +19,6 @@ public enum HelloEnum {
 
     int getGreetingNumber() { return greetingNumber; }
     String getGreetingMessage() { return greetingMessage; }
+
+
 }
