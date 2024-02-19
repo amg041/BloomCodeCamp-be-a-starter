@@ -3,11 +3,9 @@ package com.hcc.entities;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.management.relation.Role;
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "student")
@@ -27,15 +25,14 @@ public class User implements UserDetails {
     private String password;
 
     @OneToMany(targetEntity = Authority.class, mappedBy = "user", cascade = CascadeType.ALL)
-    private List<String> authorities;
+    private Set<Role> authorities;
 
 
 
-    public User(Date cohortStartDate, String username, String password, List<String> authorities) {
+    public User(Date cohortStartDate, String username, String password) {
         this.cohortStartDate = cohortStartDate;
         this.username = username;
         this.password = password;
-        this.authorities = authorities;
     }
 
     public User() {
@@ -70,7 +67,7 @@ public class User implements UserDetails {
     }
 
 
-    public void setAuthorities(List<String> authorities) {
+    public void setAuthorities(Set<Role> authorities) {
         this.authorities = authorities;
     }
 
