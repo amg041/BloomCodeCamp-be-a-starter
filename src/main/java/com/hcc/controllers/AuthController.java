@@ -24,11 +24,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 import javax.management.relation.Role;
@@ -52,7 +48,7 @@ public class AuthController {
     @Autowired
     JwtUtil jwtUtils;
 
-    @PostMapping("/signin")
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser( @RequestBody AuthCredentialRequest loginRequest) {
 
         Authentication authentication = authenticationManager
@@ -113,4 +109,17 @@ public class AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+    @PostMapping("/validate")
+    public ResponseEntity<String> validateToken(@RequestHeader("Authorization") String token) {
+        UserDetails userDetails = userRepository.findByUsername(jwtUtils.getUsernameFromToken(token)).orElse(null);
+
+        boolean isValid = jwtUtils.validateToken(token, userDetails);
+        if (isValid) {
+            return ResponseEntity.ok("Token is valid");
+        } else {
+            return ResponseEntity.status(401).body("Token is invalid");
+        }
+    }
+
 }
