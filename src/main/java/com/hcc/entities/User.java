@@ -8,11 +8,11 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Table(name = "student")
+@Table(name = "user")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_id")
+    @Column(name = "user_id")
     private Long id;
 
     @Column(name = "start_date")
@@ -25,7 +25,7 @@ public class User implements UserDetails {
     private String password;
 
     @OneToMany(targetEntity = Authority.class, mappedBy = "user", cascade = CascadeType.ALL)
-    private Set<Role> authorities;
+    private Set<Authority> authorities;
 
 
 
@@ -67,7 +67,7 @@ public class User implements UserDetails {
     }
 
 
-    public void setAuthorities(Set<Role> authorities) {
+    public void setAuthorities(Set<Authority> authorities) {
         this.authorities = authorities;
     }
 

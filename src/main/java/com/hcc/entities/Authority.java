@@ -17,7 +17,7 @@ public class Authority implements GrantedAuthority {
     private String authority;
 
     @ManyToOne
-    @Column(name = "student")
+    @JoinColumn(name = "user")
     private User user;
 
     public Authority(String authority) {

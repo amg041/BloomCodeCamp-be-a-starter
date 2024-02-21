@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.hcc.entities.Authority;
 import com.hcc.entities.User;
 import com.hcc.enums.AuthorityEnum;
 import com.hcc.model.AuthCredentialRequest;
 import com.hcc.model.JwtResponse;
 import com.hcc.model.MessageResponse;
 import com.hcc.model.SignUpRequest;
-import com.hcc.repositories.RoleRepository;
+import com.hcc.repositories.AuthorityRepository;
 import com.hcc.repositories.UserRepository;
 import com.hcc.utils.JwtUtil;
 
@@ -40,7 +41,7 @@ public class AuthController {
     UserRepository userRepository;
 
     @Autowired
-    RoleRepository roleRepository;
+    AuthorityRepository authorityRepository;
 
     @Autowired
     PasswordEncoder encoder;
@@ -75,29 +76,29 @@ public class AuthController {
         User user = new User(signUpRequest.getCohortStartDate(), signUpRequest.getUsername(), signUpRequest.getPassword());
 
         Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
+        Set<Authority> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(AuthorityEnum.USER)
+            Authority userRole = authorityRepository.findByAuthority(AuthorityEnum.USER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "admin":
-                        Role adminRole = roleRepository.findByName(AuthorityEnum.ADMIN)
+                        Authority adminRole = authorityRepository.findByAuthority(AuthorityEnum.ADMIN)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(adminRole);
 
                         break;
                     case "mod":
-                        Role modRole = roleRepository.findByName(AuthorityEnum.MODERATOR)
+                        Authority modRole = authorityRepository.findByAuthority(AuthorityEnum.MODERATOR)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(modRole);
 
                         break;
                     default:
-                        Role userRole = roleRepository.findByName(AuthorityEnum.USER)
+                        Authority userRole = authorityRepository.findByAuthority(AuthorityEnum.USER)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(userRole);
                 }
