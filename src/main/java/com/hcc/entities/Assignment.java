@@ -27,6 +27,8 @@ public class Assignment {
 
     @ManyToOne
     private User user;
+
+    @ManyToOne
     private User codeReviewer;
 
 
