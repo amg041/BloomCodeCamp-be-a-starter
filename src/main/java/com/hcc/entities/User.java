@@ -34,9 +34,13 @@ public class User implements UserDetails {
         this.username = username;
         this.password = password;
     }
+    public User(Long id) {
+        this.id = id;
+    }
 
     public User() {
     }
+
 
     public Long getId() {
         return id;

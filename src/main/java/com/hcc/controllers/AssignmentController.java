@@ -6,11 +6,12 @@ import com.hcc.model.AssignmentResponseDto;
 import com.hcc.services.AssignmentService;
 import com.hcc.services.UserDetailServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/assignments")
 public class AssignmentController {
@@ -32,9 +33,14 @@ public class AssignmentController {
         return ResponseEntity.ok(assignmentResponseDto);
     }
 
-    @PostMapping("/")
-    public Assignment addAssignment(@RequestBody Assignment newAssignment) {
-        return assignmentService.addAssignment(newAssignment);
+    @PostMapping
+    public ResponseEntity<Assignment> addAssignment( @RequestBody Assignment newAssignment) {
+        try {
+            Assignment createdAssignment = assignmentService.addAssignment(newAssignment);
+            return new ResponseEntity<>(createdAssignment, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/{id}")

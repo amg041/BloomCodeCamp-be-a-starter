@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.hcc.entities.Authority;
 import com.hcc.entities.User;
 import com.hcc.enums.AuthorityEnum;
+import com.hcc.exceptions.UsernameNotFoundException;
 import com.hcc.model.AuthCredentialRequest;
 import com.hcc.model.JwtResponse;
 import com.hcc.model.MessageResponse;
@@ -17,10 +18,13 @@ import com.hcc.repositories.UserRepository;
 import com.hcc.utils.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -50,20 +54,35 @@ public class AuthController {
     JwtUtil jwtUtils;
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser( @RequestBody AuthCredentialRequest loginRequest) {
+    public ResponseEntity<?> authenticateUser(@RequestBody AuthCredentialRequest loginRequest) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()
+                    )
+            );
 
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateToken(loginRequest.getUser());
+            // Retrieve the User object from the database
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + userDetails.getUsername()));
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+            String jwt = jwtUtils.generateToken(user);  // Generate token with User
 
-        return ResponseEntity
-                .ok(new JwtResponse(jwt, userDetails.getUsername(), roles));
+            List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Access-Control-Expose-Headers", "Authorization");
+            headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+            return ResponseEntity.ok().headers(headers).body(user.getId());
+        } catch (AuthenticationException e) {
+            System.out.println("Authentication failed: " + e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed");
+        }
     }
 
     @PostMapping("/signup")
@@ -73,7 +92,7 @@ public class AuthController {
         }
 
         // Create new user's account
-        User user = new User(signUpRequest.getCohortStartDate(), signUpRequest.getUsername(), signUpRequest.getPassword());
+        User user = new User(signUpRequest.getCohortStartDate(), signUpRequest.getUsername(), encoder.encode(signUpRequest.getPassword()));
 
         Set<String> strRoles = signUpRequest.getRole();
         Set<Authority> roles = new HashSet<>();

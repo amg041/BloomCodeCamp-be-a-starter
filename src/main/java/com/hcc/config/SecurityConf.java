@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,9 +37,13 @@ public class SecurityConf  extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().cors().disable(); // do not dissable this lot here just for now!!
+        http.csrf().disable();
 
-        http = http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and();
+        http.cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues());
+
+        http = http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and();
 
         http = http.exceptionHandling().authenticationEntryPoint((request, response, exception) -> {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, exception.getMessage());
@@ -47,6 +52,7 @@ public class SecurityConf  extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated();
+
         http.addFilterBefore(jwtFilt, UsernamePasswordAuthenticationFilter.class);
     }
 
