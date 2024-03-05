@@ -136,7 +136,7 @@ public class AuthController {
 
         boolean isValid = jwtUtils.validateToken(token, userDetails);
         if (isValid) {
-            return ResponseEntity.ok("Token is valid");
+            return ResponseEntity.ok("Token is valid!");
         } else {
             return ResponseEntity.status(401).body("Token is invalid");
         }
