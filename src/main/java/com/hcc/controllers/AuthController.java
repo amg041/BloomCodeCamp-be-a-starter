@@ -138,7 +138,7 @@ public class AuthController {
         if (isValid) {
             return ResponseEntity.ok("Token is valid!");
         } else {
-            return ResponseEntity.status(401).body("Token is invalid");
+            return ResponseEntity.status(401).body("Token is invalid!");
         }
     }
 
